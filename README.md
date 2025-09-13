@@ -198,4 +198,4 @@ To receive notifications in Slack:
 
 ## License
 
-This project is open source. Use it however you'd like!
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
