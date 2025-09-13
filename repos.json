@@ -1,0 +1,5 @@
+{
+  "repositories": ["darrenjaworski/kanbeasy", "darrenjaworski/vscode-kanbeasy"],
+  "schedule_hours": [9, 17],
+  "timezone": "UTC"
+}

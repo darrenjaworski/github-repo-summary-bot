@@ -1,0 +1,10 @@
+{
+  "repositories": [
+    "microsoft/vscode",
+    "facebook/react",
+    "nodejs/node",
+    "python/cpython"
+  ],
+  "schedule_hours": [9, 17],
+  "timezone": "UTC"
+}
