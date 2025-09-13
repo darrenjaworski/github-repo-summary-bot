@@ -138,42 +138,63 @@ class GitHubRepoBot:
         conn.close()
 
     def format_changes_for_ai(self, commits: List[Dict], pulls: List[Dict]) -> str:
-        """Format repository changes for AI summarization"""
+        """Format repository changes for AI summarization with structured sections"""
         content = []
 
+        # Separate open and closed PRs
+        open_prs = [pr for pr in pulls if pr["state"] == "open"]
+        closed_prs = [pr for pr in pulls if pr["state"] == "closed"]
+
+        # Currently Open Pull Requests
+        if open_prs:
+            content.append("CURRENTLY OPEN PULL REQUESTS:")
+            for pr in open_prs[:5]:  # Limit to 5 most recent
+                title = pr["title"]
+                author = pr["user"]["login"]
+                created = pr["created_at"]
+                content.append(f"- {title} (by {author}, opened {created})")
+            content.append("")  # Add blank line
+
+        # Recent Pushes to Default Branch (commits)
         if commits:
-            content.append("Recent Commits:")
+            content.append("RECENT PUSHES TO DEFAULT BRANCH:")
             for commit in commits[:10]:  # Limit to 10 most recent
                 commit_msg = commit["commit"]["message"].split("\n")[0]  # First line only
                 author = commit["commit"]["author"]["name"]
                 date = commit["commit"]["author"]["date"]
                 content.append(f"- {commit_msg} (by {author} on {date})")
+            content.append("")  # Add blank line
 
-        if pulls:
-            content.append("\nRecent Pull Requests:")
-            for pr in pulls[:5]:  # Limit to 5 most recent
-                state = pr["state"]
+        # Recently Closed/Merged PRs (if any)
+        if closed_prs:
+            content.append("RECENTLY CLOSED/MERGED PULL REQUESTS:")
+            for pr in closed_prs[:3]:  # Limit to 3 most recent
                 title = pr["title"]
                 author = pr["user"]["login"]
                 updated = pr["updated_at"]
-                content.append(f"- [{state.upper()}] {title} (by {author}, updated {updated})")
+                content.append(f"- {title} (by {author}, closed {updated})")
 
         return "\n".join(content)
 
     def generate_summary(self, changes_text: str, repo_name: str) -> str:
         """Generate AI summary of repository changes using OpenAI"""
         prompt = f"""
-Please provide a concise summary of the recent activity in the GitHub repository '{repo_name}':
+Please provide a structured summary of the recent activity in the GitHub repository '{repo_name}':
 
 {changes_text}
 
-Focus on:
-1. Key features or fixes that were implemented
-2. Notable contributors and their contributions
-3. Overall development trends or patterns
-4. Any significant pull request activity
+Format your response with these sections:
 
-Keep the summary under 200 words and highlight the most important changes.
+## Currently Open Pull Requests
+[Summarize the open PRs - what features/fixes are being worked on]
+
+## Recent Pushes to Default Branch
+[Summarize recent commits - what was actually merged/completed]
+
+## Development Trends
+[Overall patterns, notable contributors, and key themes]
+
+Keep each section concise (2-3 sentences max) and highlight the most important changes. If a section has no data, you can skip it.
 """
 
         try:
@@ -203,8 +224,30 @@ Keep the summary under 200 words and highlight the most important changes.
 
             # Filter pulls updated since last check
             if last_check:
-                last_check_dt = datetime.fromisoformat(last_check.replace('Z', '+00:00'))
-                pulls = [pr for pr in pulls if datetime.fromisoformat(pr['updated_at'].replace('Z', '+00:00')) > last_check_dt]
+                # Handle both timezone-aware and naive datetime strings
+                if last_check.endswith('Z'):
+                    last_check_dt = datetime.fromisoformat(last_check.replace('Z', '+00:00'))
+                else:
+                    last_check_dt = datetime.fromisoformat(last_check)
+
+                filtered_pulls = []
+                for pr in pulls:
+                    pr_updated = pr['updated_at']
+                    if pr_updated.endswith('Z'):
+                        pr_dt = datetime.fromisoformat(pr_updated.replace('Z', '+00:00'))
+                    else:
+                        pr_dt = datetime.fromisoformat(pr_updated)
+
+                    # Make both datetimes timezone-naive for comparison
+                    if last_check_dt.tzinfo:
+                        last_check_dt = last_check_dt.replace(tzinfo=None)
+                    if pr_dt.tzinfo:
+                        pr_dt = pr_dt.replace(tzinfo=None)
+
+                    if pr_dt > last_check_dt:
+                        filtered_pulls.append(pr)
+
+                pulls = filtered_pulls
 
             total_changes = len(commits) + len(pulls)
 
