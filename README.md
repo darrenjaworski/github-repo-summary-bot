@@ -53,9 +53,51 @@ A Python bot that monitors multiple GitHub repositories for changes and generate
 
 ## Usage
 
-### Run the bot
+### Setup Virtual Environment
 
 ```bash
+# Set up virtual environment and dependencies
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### CLI Commands
+
+#### Initialize configuration
+```bash
+python cli.py init
+```
+Creates `.env` and `repos.json` configuration files with sample content.
+
+#### Test single repository
+```bash
+source venv/bin/activate
+python cli.py check microsoft/vscode
+```
+
+#### Check all configured repositories
+```bash
+source venv/bin/activate
+python cli.py check-all
+```
+
+#### View recent summaries
+```bash
+source venv/bin/activate
+python cli.py summaries -l 5
+```
+
+#### Run in daemon mode (scheduled checks)
+```bash
+source venv/bin/activate
+python cli.py daemon
+```
+
+### Direct Module Usage
+
+```bash
+source venv/bin/activate
 python repo_summary_bot.py
 ```
 
@@ -65,7 +107,7 @@ The bot will:
 3. Schedule regular checks based on your configuration
 4. Generate summaries for repositories with new activity
 
-### Manual repository check
+### Programmatic Usage
 
 You can also import and use the bot programmatically:
 
