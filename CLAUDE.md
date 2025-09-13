@@ -81,3 +81,50 @@ The SQLite database has two main tables:
 - `GitHubRepoBot.check_repo_for_changes()`: Main method that checks a repository, generates summaries if changes found
 - `GitHubRepoBot.generate_summary()`: Uses OpenAI to create AI summaries from repository changes
 - `GitHubRepoBot.get_recent_summaries()`: Retrieves stored summaries from database
+
+## Git Commit Guidelines
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/) specification. When committing code, use the following format:
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Commit Types
+
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation only changes
+- **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **perf**: A code change that improves performance
+- **test**: Adding missing tests or correcting existing tests
+- **build**: Changes that affect the build system or external dependencies
+- **ci**: Changes to CI configuration files and scripts
+- **chore**: Other changes that don't modify src or test files
+- **revert**: Reverts a previous commit
+
+### Examples
+
+```bash
+# Feature addition
+git commit -m "feat: add support for webhook notifications"
+
+# Bug fix
+git commit -m "fix: resolve database connection timeout issue"
+
+# Documentation update
+git commit -m "docs: add API usage examples to README"
+
+# Refactoring
+git commit -m "refactor: extract summary generation logic into separate module"
+
+# Breaking change
+git commit -m "feat!: change API response format for summaries
+
+BREAKING CHANGE: summary API now returns structured data instead of plain text"
+```
