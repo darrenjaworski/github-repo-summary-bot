@@ -108,6 +108,21 @@ def show_summaries(args):
         print(f"Error: {e}")
         sys.exit(1)
 
+def test_slack(args):
+    """Test Slack webhook connection"""
+    try:
+        bot = GitHubRepoBot()
+
+        if bot.test_slack_connection():
+            print("✅ Slack connection test successful!")
+        else:
+            print("❌ Slack connection test failed")
+            sys.exit(1)
+
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
 def run_daemon(args):
     """Run the bot in daemon mode"""
     config_file = args.config or "repos.json"
@@ -170,6 +185,7 @@ Examples:
   python cli.py check microsoft/vscode       # Check single repository
   python cli.py check-all                    # Check all configured repos
   python cli.py summaries -l 5               # Show 5 recent summaries
+  python cli.py test-slack                   # Test Slack webhook connection
   python cli.py daemon                       # Run in scheduled mode
         """
     )
@@ -196,6 +212,10 @@ Examples:
     summaries_parser.add_argument("--repo", help="Show summaries for specific repository only")
     summaries_parser.add_argument("-l", "--limit", type=int, default=10, help="Number of summaries to show (default: 10)")
     summaries_parser.set_defaults(func=show_summaries)
+
+    # Test Slack connection
+    test_slack_parser = subparsers.add_parser("test-slack", help="Test Slack webhook connection")
+    test_slack_parser.set_defaults(func=test_slack)
 
     # Daemon mode
     daemon_parser = subparsers.add_parser("daemon", help="Run bot in scheduled daemon mode")

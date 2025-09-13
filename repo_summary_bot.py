@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from dotenv import load_dotenv
 from openai import OpenAI
+from slack_notifier import SlackNotifier
 
 load_dotenv()
 
@@ -24,6 +25,8 @@ class GitHubRepoBot:
         self.github_token = os.getenv("GITHUB_TOKEN")
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.openai_model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+        self.slack_webhook_url = os.getenv("SLACK_WEBHOOK_URL")
+        self.slack_channel = os.getenv("SLACK_CHANNEL")
         self.db_path = db_path
         self.base_url = "https://api.github.com"
 
@@ -34,6 +37,14 @@ class GitHubRepoBot:
             raise ValueError("OPENAI_API_KEY environment variable is required")
 
         self.client = OpenAI(api_key=self.openai_api_key)
+
+        # Initialize Slack notifier if webhook URL is provided
+        self.slack_notifier = None
+        if self.slack_webhook_url:
+            self.slack_notifier = SlackNotifier(self.slack_webhook_url, self.slack_channel)
+            print("✅ Slack notifications enabled")
+        else:
+            print("ℹ️  Slack notifications disabled (no SLACK_WEBHOOK_URL configured)")
 
         self.headers = {
             "Authorization": f"token {self.github_token}",
@@ -282,6 +293,11 @@ Keep each section concise (2-3 sentences max) and highlight the most important c
             print(summary)
             print("-" * 50)
 
+            # Send Slack notification if enabled
+            if self.slack_notifier:
+                current_time = datetime.utcnow().isoformat()
+                self.slack_notifier.send_summary(repo_name, summary, total_changes, current_time)
+
             return summary
 
         except requests.exceptions.RequestException as e:
@@ -333,6 +349,14 @@ Keep each section concise (2-3 sentences max) and highlight the most important c
             }
             for row in results
         ]
+
+    def test_slack_connection(self) -> bool:
+        """Test Slack webhook connection"""
+        if not self.slack_notifier:
+            print("❌ Slack notifications not configured")
+            return False
+
+        return self.slack_notifier.test_connection()
 
 def main():
     # Load repository configuration

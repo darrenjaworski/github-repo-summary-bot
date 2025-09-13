@@ -50,6 +50,12 @@ source venv/bin/activate
 python cli.py summaries -l 5
 ```
 
+### Test Slack connection
+```bash
+source venv/bin/activate
+python cli.py test-slack
+```
+
 ### Run in daemon mode (scheduled checks)
 ```bash
 source venv/bin/activate
@@ -68,6 +74,12 @@ The bot requires:
 1. **GitHub Token**: Set `GITHUB_TOKEN` in `.env` file (get from https://github.com/settings/tokens)
 2. **OpenAI API Key**: Set `OPENAI_API_KEY` in `.env` file (get from https://platform.openai.com/api-keys)
 3. **Repository List**: Configure repositories to monitor in `repos.json`
+
+### Optional Slack Notifications
+
+To receive summaries in Slack:
+1. **Slack Webhook URL**: Set `SLACK_WEBHOOK_URL` in `.env` file (get from https://api.slack.com/messaging/webhooks)
+2. **Slack Channel** (optional): Set `SLACK_CHANNEL` in `.env` file (e.g., `#repo-updates` or `@username`)
 
 ## Database Schema
 

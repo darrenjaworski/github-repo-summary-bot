@@ -1,11 +1,12 @@
 # GitHub Repository Summary Bot
 
-A Python bot that monitors multiple GitHub repositories for changes and generates AI-powered summaries of commits, pull requests, and repository activity using Ollama.
+A Python bot that monitors multiple GitHub repositories for changes and generates AI-powered summaries of commits, pull requests, and repository activity using OpenAI.
 
 ## Features
 
 - **Multi-repository monitoring**: Track changes across multiple GitHub repositories
-- **AI-powered summaries**: Generate intelligent summaries using local Ollama models
+- **AI-powered summaries**: Generate intelligent summaries using OpenAI models
+- **Slack notifications**: Send summaries directly to Slack channels via webhooks
 - **Persistent storage**: SQLite database to track repository states and store summaries
 - **Scheduled checks**: Configurable schedule for automatic repository monitoring
 - **Change detection**: Only generates summaries when new activity is detected
@@ -15,7 +16,8 @@ A Python bot that monitors multiple GitHub repositories for changes and generate
 ### Prerequisites
 
 1. **GitHub Token**: Create a personal access token at https://github.com/settings/tokens
-2. **Ollama**: Install and run Ollama locally with a model (e.g., `ollama pull llama3.2`)
+2. **OpenAI API Key**: Get an API key from https://platform.openai.com/api-keys
+3. **Slack Webhook** (optional): For notifications, set up a webhook at https://api.slack.com/messaging/webhooks
 
 ### Installation
 
@@ -29,9 +31,14 @@ A Python bot that monitors multiple GitHub repositories for changes and generate
    ```bash
    cp .env.example .env
    ```
-   Edit `.env` and add your GitHub token:
+   Edit `.env` and add your tokens:
    ```
    GITHUB_TOKEN=your_actual_github_token_here
+   OPENAI_API_KEY=your_openai_api_key_here
+
+   # Optional: For Slack notifications
+   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+   SLACK_CHANNEL=#repo-updates
    ```
 
 4. Create your repository configuration:
@@ -88,6 +95,12 @@ source venv/bin/activate
 python cli.py summaries -l 5
 ```
 
+#### Test Slack connection
+```bash
+source venv/bin/activate
+python cli.py test-slack
+```
+
 #### Run in daemon mode (scheduled checks)
 ```bash
 source venv/bin/activate
@@ -134,8 +147,11 @@ for summary in recent:
 ### Environment Variables
 
 - `GITHUB_TOKEN`: Your GitHub personal access token (required)
-- `OLLAMA_MODEL`: Ollama model to use for summaries (default: llama3.2)
+- `OPENAI_API_KEY`: Your OpenAI API key (required)
+- `OPENAI_MODEL`: OpenAI model to use for summaries (default: gpt-4o-mini)
 - `REPO_CONFIG_FILE`: Path to repository configuration file (default: repos.json)
+- `SLACK_WEBHOOK_URL`: Slack webhook URL for notifications (optional)
+- `SLACK_CHANNEL`: Slack channel for notifications (optional, defaults to webhook's configured channel)
 
 ### Repository Configuration (repos.json)
 
@@ -155,8 +171,30 @@ Database file: `repo_summaries.db` (created automatically)
 
 - Python 3.7+
 - GitHub personal access token
-- Ollama running locally
+- OpenAI API key
+- Optional: Slack workspace with webhook access
 - Required Python packages (see requirements.txt)
+
+## Slack Setup
+
+To receive notifications in Slack:
+
+1. **Create a Slack App**:
+   - Go to https://api.slack.com/apps
+   - Click "Create New App" → "From scratch"
+   - Name your app and select your workspace
+
+2. **Enable Incoming Webhooks**:
+   - In your app settings, go to "Incoming Webhooks"
+   - Toggle "Activate Incoming Webhooks" to On
+   - Click "Add New Webhook to Workspace"
+   - Select the channel where you want notifications
+   - Copy the webhook URL
+
+3. **Configure the Bot**:
+   - Add the webhook URL to your `.env` file as `SLACK_WEBHOOK_URL`
+   - Optionally specify a channel with `SLACK_CHANNEL` (overrides webhook default)
+   - Test the connection: `python cli.py test-slack`
 
 ## License
 
